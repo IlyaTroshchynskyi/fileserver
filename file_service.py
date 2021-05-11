@@ -1,5 +1,6 @@
 import os
 import utils
+import openpyxl
 
 
 def read_file(path_to_file):
@@ -52,3 +53,25 @@ def get_metadata_file(path_to_file):
             print("File wasn't found")
     except FileNotFoundError as e:
         print("File wasn't found")
+
+
+def read_excel_file(path_to_file):
+    try:
+        wb = openpyxl.load_workbook(path_to_file)
+    except FileNotFoundError:
+        print("File not found")
+
+    worksheet = wb.active
+    data = []
+
+    for row in range(1, worksheet.max_row):
+        collect_line = []
+        for column in range(1, worksheet.max_column):
+            collect_line.append(worksheet.cell(row=row, column=column).value)
+            if column + 1 == worksheet.max_column:
+                data.append(collect_line)
+
+    return data
+
+
+print(read_excel_file('InputOutputValidation.xlsx'))
