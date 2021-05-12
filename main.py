@@ -3,6 +3,10 @@ import argparse
 
 
 def add_parameters():
+    """Add different parameters for working with terminal.
+    Returns:
+        args (dict): All values and variables
+    """
     parser = argparse.ArgumentParser(
         description="""Work with files. Has four functions:read_file:[-nm],create_file:
         [-ln,-ext,-con,-lt,dg],delete_file:[-nm],get_metadata_file:[-nm]""")
@@ -29,6 +33,11 @@ def add_parameters():
 
 
 def choose_action(args):
+    """Choose action will use and what parameters are used
+    Args:
+        args (dict): All parameters for terminal
+    """
+
     if args.action == 'read_file':
         file_service.read_file(args.name)
     elif args.action == 'create_file':
