@@ -35,7 +35,7 @@ def choose_action(args):
         file_service.create_file(length_name=args.length,
                                  extension=args.extension,
                                  content=args.content,
-                                 letters=bool(args.letters),
+                                 letter=bool(args.letters),
                                  digit=bool(args.digits))
     elif args.action == 'delete_file':
         file_service.delete_file(args.name)
