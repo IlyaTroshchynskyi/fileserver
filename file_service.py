@@ -93,17 +93,65 @@ def read_excel_file(path_to_file):
     for row in range(1, worksheet.max_row + 1):
         collect_line = []
         for column in range(1, worksheet.max_column + 1):
-            collect_line.append(str(worksheet.cell(row=row, column=column).value))
+            collect_line.append(
+                str(worksheet.cell(row=row, column=column).value)
+                if worksheet.cell(row=row, column=column).value else '')
             if column == worksheet.max_column:
                 data.append(collect_line)
 
     return data
 
 
-d = read_excel_file('InputOutputValidation.xlsx')
+d = read_excel_file('InputOutputValidation_v2.xlsx')
 
 
+def add_additional_columns(data):
+
+    head = 0
+    content = [data[head]]
+    content[0].extend(['cell_id_expression', 'amount_expression'])
+    for index_row in range(1, len(data)):
+        content.append(data[index_row])
+
+        cell_id_divider = data[index_row][6] + '/' + data[index_row][10] \
+            if int(data[index_row][10]) > 1 else data[index_row][6]
+
+        cell_id_expression = '(' + cell_id_divider + data[index_row][8].replace('(', '') \
+            if data[index_row][8].startswith('(') else cell_id_divider + data[index_row][8]
+
+        sign_value = data[index_row][7] if int(data[index_row][7]) > 0 else '0'
+
+        amount_divider = sign_value + '/' + data[index_row][10] \
+            if int(data[index_row][10]) > 1 else sign_value
+
+        amount_expression = '(' + amount_divider + data[index_row][8].replace('(', '') \
+            if data[index_row][8].startswith('(') else amount_divider + data[index_row][8]
+
+        content[index_row].append(cell_id_expression)
+        content[index_row].append(amount_expression)
+
+    return content
 
 
+d1 = add_additional_columns(d)
 
+
+def parse_table_content(data):
+    """
+    In development yet
+    """
+    head = 0
+    content = [data[head]]
+    for index_row in range(1, len(data)):
+        if content[len(content) - 1][3] != data[index_row][3]:
+            content.append(data[index_row])
+        else:
+            content[len(content) - 1][11] += data[index_row][11]
+            content[len(content) - 1][12] += data[index_row][12]
+
+    for x in content:
+        print(x)
+
+
+parse_table_content(d1)
 
