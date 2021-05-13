@@ -2,3 +2,5 @@ venv/
 __pycache__
 .idea/
 InputOutputValidation.xlsx
+test_data/
+.pytest_cache/

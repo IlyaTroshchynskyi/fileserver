@@ -1,7 +1,8 @@
 import os
 import utils
 import openpyxl
-
+import csv
+import json
 
 def read_file(path_to_file):
     """Read files on your server
@@ -75,6 +76,44 @@ def get_metadata_file(path_to_file):
         print("File wasn't found")
 
 
+def read_csv_files(path_to_file, delimiter=','):
+    """Read csv file with delimiter specified by user.
+        Args:
+            path_to_file (srt): Path to file
+            delimiter (str): Define sign for separating values. Defaults to ','.
+        Returns:
+            data (list): Contains all rows of the file
+    """
+    try:
+        with open(path_to_file, newline='') as file:
+            reader = csv.reader(file, delimiter=delimiter)
+            data = [row for row in reader]
+        return data
+    except FileNotFoundError:
+        print("File not found")
+
+
+# print(read_csv_files('test_data/ETH_1h.csv'))
+
+def read_json_files(path_to_file):
+    """Read json file.
+            Args:
+                path_to_file (srt): Path to file
+            Returns:
+                data (list): Contains all data from the file
+        """
+
+    try:
+        with open(path_to_file) as f:
+            data = json.load(f)
+            return data
+    except FileNotFoundError:
+        print("File with format json wasn't found")
+
+
+print(read_json_files('test_data/rule.json'))
+
+
 def read_excel_file(path_to_file):
     """Read excel file with extension .xlsx from the active sheet.
         Args:
@@ -133,7 +172,7 @@ def add_additional_columns(data):
     return content
 
 
-d1 = add_additional_columns(d)
+# d1 = add_additional_columns(d)
 
 
 def parse_table_content(data):
@@ -153,5 +192,5 @@ def parse_table_content(data):
         print(x)
 
 
-parse_table_content(d1)
+# parse_table_content(d1)
 
