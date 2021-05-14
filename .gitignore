@@ -4,3 +4,4 @@ __pycache__
 InputOutputValidation.xlsx
 test_data/
 .pytest_cache/
+*.log

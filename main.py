@@ -1,5 +1,11 @@
 import file_service
 import argparse
+import logging
+from config import init_logger
+
+
+init_logger('app')
+logger = logging.getLogger("app.main")
 
 
 def add_parameters():
@@ -51,7 +57,7 @@ def choose_action(args):
     elif args.action == 'get_metadata_file':
         file_service.get_metadata_file(args.name)
     else:
-        print('Try again you choose wrong command')
+        logger.info('Try again! You choose wrong action')
 
 
 if __name__ == '__main__':

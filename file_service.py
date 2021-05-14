@@ -3,6 +3,10 @@ import utils
 import openpyxl
 import csv
 import json
+import logging
+
+logger = logging.getLogger('app.file_service')
+
 
 def read_file(path_to_file):
     """Read files on your server
@@ -16,7 +20,8 @@ def read_file(path_to_file):
             content = file.read()
             return content
     except FileNotFoundError:
-        print("File wasn't found")
+        logger.error("The user passed a non-existent file name for reading. Try again")
+
 
 
 def create_file(length_name, extension, content, letter, digit):
@@ -35,10 +40,10 @@ def create_file(length_name, extension, content, letter, digit):
                                              extension=extension)
         with open(file_name, 'x') as file:
             file.write(content)
-            print(f'File was created with name {file_name}')
-            return
-    except FileNotFoundError:
-        print("File wasn't created")
+            logger.info(f'File was created with name {file_name}')
+    except FileExistsError:
+        logger.error("File wasn't created because you had tried"
+                     " to create file with the existing name")
 
 
 def delete_file(path_to_file):
@@ -48,9 +53,10 @@ def delete_file(path_to_file):
     """
     try:
         os.remove(path_to_file)
-        print("File was deleted successfully")
+        logger.info("File was deleted successfully")
     except FileNotFoundError:
-        print("File wasn't found")
+        logger.error("File wasn't found. You had tried to delete not existing "
+                     "file or you path to file is wrong")
 
 
 def get_metadata_file(path_to_file):
@@ -73,7 +79,7 @@ def get_metadata_file(path_to_file):
                 'modification_time': utils.conversion_date_time(data.st_mtime),
                 'creation_time': utils.conversion_date_time(data.st_ctime)}
     except FileNotFoundError:
-        print("File wasn't found")
+        logger.error("File wasn't found for getting meta data")
 
 
 def read_csv_files(path_to_file, delimiter=','):
@@ -90,12 +96,12 @@ def read_csv_files(path_to_file, delimiter=','):
             data = [row for row in reader]
         return data
     except FileNotFoundError:
-        print("File not found")
+        logger.error("File not found for reading csv file")
 
 
 # print(read_csv_files('test_data/ETH_1h.csv'))
 
-def read_json_files(path_to_file):
+def read_json_file(path_to_file):
     """Read json file.
             Args:
                 path_to_file (srt): Path to file
@@ -108,10 +114,10 @@ def read_json_files(path_to_file):
             data = json.load(f)
             return data
     except FileNotFoundError:
-        print("File with format json wasn't found")
+        logger.error("File for reading json file wasn't found")
 
 
-print(read_json_files('test_data/rule.json'))
+print(read_json_file('test_data/rule.json'))
 
 
 def read_excel_file(path_to_file):
@@ -124,7 +130,7 @@ def read_excel_file(path_to_file):
     try:
         wb = openpyxl.load_workbook(path_to_file)
     except FileNotFoundError:
-        print("File not found")
+        logger.error("File for reading excel file wasn't found")
 
     worksheet = wb.active
     data = []
