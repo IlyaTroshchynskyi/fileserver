@@ -120,6 +120,11 @@ def read_json_file(path_to_file):
 print(read_json_file('test_data/rule.json'))
 
 
+def get_cell_data(worksheet, x, y):
+    return str(worksheet.cell(row=x, column=y).value) \
+        if worksheet.cell(row=x, column=y).value else ''
+
+
 def read_excel_file(path_to_file):
     """Read excel file with extension .xlsx from the active sheet.
         Args:
@@ -127,24 +132,15 @@ def read_excel_file(path_to_file):
         Returns:
             data (list): Contains all rows of the active sheet of the excel file
         """
+
     try:
         wb = openpyxl.load_workbook(path_to_file)
+        worksheet = wb.active
+        return [[get_cell_data(worksheet, row, column)
+                 for column in range(1, worksheet.max_column + 1)]
+                for row in range(1, worksheet.max_row + 1)]
     except FileNotFoundError:
         logger.error("File for reading excel file wasn't found")
-
-    worksheet = wb.active
-    data = []
-
-    for row in range(1, worksheet.max_row + 1):
-        collect_line = []
-        for column in range(1, worksheet.max_column + 1):
-            collect_line.append(
-                str(worksheet.cell(row=row, column=column).value)
-                if worksheet.cell(row=row, column=column).value else '')
-            if column == worksheet.max_column:
-                data.append(collect_line)
-
-    return data
 
 
 d = read_excel_file('InputOutputValidation_v2.xlsx')
