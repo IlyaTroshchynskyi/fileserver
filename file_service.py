@@ -4,6 +4,8 @@ import openpyxl
 import csv
 import json
 import logging
+import re
+
 
 logger = logging.getLogger('app.file_service')
 
@@ -99,8 +101,6 @@ def read_csv_files(path_to_file, delimiter=','):
         logger.error("File not found for reading csv file")
 
 
-# print(read_csv_files('test_data/ETH_1h.csv'))
-
 def read_json_file(path_to_file):
     """Read json file.
             Args:
@@ -121,6 +121,15 @@ print(read_json_file('test_data/rule.json'))
 
 
 def get_cell_data(worksheet, x, y):
+    """Get data from the cell in Excel file.
+           Args:
+               worksheet (obj): Active worksheet from Excel file
+               x (int): Number of row
+               y (int): Number of column
+           Returns:
+               value (str): Data from the cell or '' if cell was empty.
+           """
+
     return str(worksheet.cell(row=x, column=y).value) \
         if worksheet.cell(row=x, column=y).value else ''
 
@@ -143,29 +152,35 @@ def read_excel_file(path_to_file):
         logger.error("File for reading excel file wasn't found")
 
 
-d = read_excel_file('InputOutputValidation_v2.xlsx')
+data = read_excel_file('InputOutputValidation_v2.xlsx')
 
 
 def add_additional_columns(data):
-
+    """Add two additional columns for concatenation cell id with expression and divider
+    and amount with expression and divider.
+           Args:
+               data (List[list]): Data from excel file
+           Returns:
+               data (List[list]): Contains data from excel file and two additional columns
+           """
     head = 0
     content = [data[head]]
     content[0].extend(['cell_id_expression', 'amount_expression'])
     for index_row in range(1, len(data)):
         content.append(data[index_row])
 
-        cell_id_divider = data[index_row][6] + '/' + data[index_row][10] \
+        cell_id_divider = f'{data[index_row][6]}/{data[index_row][10]}'\
             if int(data[index_row][10]) > 1 else data[index_row][6]
 
-        cell_id_expression = '(' + cell_id_divider + data[index_row][8].replace('(', '') \
+        cell_id_expression = f"({cell_id_divider}{data[index_row][8].replace('(', '')}" \
             if data[index_row][8].startswith('(') else cell_id_divider + data[index_row][8]
 
         sign_value = data[index_row][7] if int(data[index_row][7]) > 0 else '0'
 
-        amount_divider = sign_value + '/' + data[index_row][10] \
+        amount_divider = f'{sign_value}/{data[index_row][10]}' \
             if int(data[index_row][10]) > 1 else sign_value
 
-        amount_expression = '(' + amount_divider + data[index_row][8].replace('(', '') \
+        amount_expression = f"({amount_divider}{data[index_row][8].replace('(', '')}" \
             if data[index_row][8].startswith('(') else amount_divider + data[index_row][8]
 
         content[index_row].append(cell_id_expression)
@@ -174,25 +189,78 @@ def add_additional_columns(data):
     return content
 
 
-# d1 = add_additional_columns(d)
+data = add_additional_columns(data)
+
+SPLIT_FORMULA_SIGNS = re.compile('<=|=|<>|!=|>=|=<|=>|>|<|==')
+EQUAL_SIGN = re.compile('==|<=|>=|!=|=<|=>')
 
 
-def parse_table_content(data):
-    """
-    In development yet
-    """
-    head = 0
-    content = [data[head]]
-    for index_row in range(1, len(data)):
-        if content[len(content) - 1][3] != data[index_row][3]:
-            content.append(data[index_row])
-        else:
-            content[len(content) - 1][11] += data[index_row][11]
-            content[len(content) - 1][12] += data[index_row][12]
-
-    for x in content:
-        print(x)
+def split_formula(result_amount):
+    """Split formulas on two parts by divider '<=|=|<>|!=|>=|=<|=>|>|<|=='
+           Args:
+               result_amount (str):
+           Returns:
+               formulas (List): Two part of the formulas
+           """
+    return SPLIT_FORMULA_SIGNS.split(result_amount)
 
 
-# parse_table_content(d1)
+def evaluate_amount(result_amount):
+    """Evaluate the expressions of the formula'
+           Args:
+               result_amount (str):
+           Returns:
+               formulas (List): Results evaluation. Can be integer or bool
+           """
+    result_amount = result_amount.replace("%", "*1/100*")
+    return eval(result_amount.replace("=", "==")) if not EQUAL_SIGN.search(result_amount) \
+        else eval(result_amount.replace("<>", "!=").replace("=<", "<=").replace("=>", ">="))
+
+
+def combine_formulas(data):
+    """Combine rows with cell_id_expression and amount_expression to get full formulas
+    and expression.
+           Args:
+               data (List[list]): Data
+           Returns:
+               data (List[list]): Full formulas and expressions
+           """
+    content = []
+    for row in data[1:]:
+        if row[1] == '1':
+            content.append([row[3], row[4]])
+            col_res_formula_txt = row[11]
+            col_res_formula_amt = row[12]
+        elif row[1] != '1':
+            col_res_formula_txt += row[11]
+            col_res_formula_amt += row[12]
+        if row[1] == row[2]:
+            content[len(content) - 1].extend([col_res_formula_txt, col_res_formula_amt])
+
+    return content
+
+
+data = combine_formulas(data)
+
+
+def calculate_results(data):
+    """ Calculate results formulas.
+           Args:
+               data (List[list]): Data
+           Returns:
+               data (List[list]): Returns scalable results
+           """
+    results = [['Rule ID', 'Rule description', 'Result formula', 'Result amount', 'Status', 'LHS', 'RHS']]
+
+    for row in data:
+        results.append(row)
+        status = evaluate_amount(row[-1])
+        lhs, rhs = SPLIT_FORMULA_SIGNS.split(row[-1])
+        result_lhs = evaluate_amount(lhs)
+        result_rhs = evaluate_amount(rhs)
+        results[len(results) - 1].extend([status, result_lhs, result_rhs])
+
+
+calculate_results(data)
+
 
