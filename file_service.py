@@ -25,7 +25,6 @@ def read_file(path_to_file):
         logger.error("The user passed a non-existent file name for reading. Try again")
 
 
-
 def create_file(length_name, extension, content, letter, digit):
     """Create files on your server with certain extension. If file have existed the
     will raise FileExistsError
@@ -117,9 +116,6 @@ def read_json_file(path_to_file):
         logger.error("File for reading json file wasn't found")
 
 
-print(read_json_file('test_data/rule.json'))
-
-
 def get_cell_data(worksheet, x, y):
     """Get data from the cell in Excel file.
            Args:
@@ -149,7 +145,7 @@ def read_excel_file(path_to_file):
                  for column in range(1, worksheet.max_column + 1)]
                 for row in range(1, worksheet.max_row + 1)]
     except FileNotFoundError:
-        logger.error("File for reading excel file wasn't found")
+        logger.error(f"Excel file wasn't found for reading with path: {path_to_file}")
 
 
 data = read_excel_file('InputOutputValidation_v2.xlsx')
@@ -185,7 +181,7 @@ def add_additional_columns(data):
 
         content[index_row].append(cell_id_expression)
         content[index_row].append(amount_expression)
-
+    logger.info(f"Function return content with length:{len(content)}")
     return content
 
 
@@ -205,6 +201,9 @@ def split_formula(result_amount):
     return SPLIT_FORMULA_SIGNS.split(result_amount)
 
 
+check_not_math_signs = re.compile(r'[^0-9=<>/*\-+()%! ]')
+
+
 def evaluate_amount(result_amount):
     """Evaluate the expressions of the formula'
            Args:
@@ -212,6 +211,10 @@ def evaluate_amount(result_amount):
            Returns:
                formulas (List): Results evaluation. Can be integer or bool
            """
+
+    if check_not_math_signs.search(result_amount):
+        logger.error(f"Formula '{result_amount}- contain not arithmetic symbols")
+        return
     result_amount = result_amount.replace("%", "*1/100*")
     return eval(result_amount.replace("=", "==")) if not EQUAL_SIGN.search(result_amount) \
         else eval(result_amount.replace("<>", "!=").replace("=<", "<=").replace("=>", ">="))

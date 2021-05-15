@@ -15,7 +15,7 @@ def add_parameters():
     """
     parser = argparse.ArgumentParser(
         description="""Work with files. Has four functions:read_file:[-nm],create_file:
-        [-ln,-ext,-con,-lt,dg],delete_file:[-nm],get_metadata_file:[-nm]""")
+        [-ln,-ext,-con,-lt,-dg],delete_file:[-nm],get_metadata_file:[-nm]""")
 
     parser.add_argument('-nm', '--name', help='Enter name of file')
     parser.add_argument('-ln', '--length', type=int,
@@ -57,6 +57,7 @@ def choose_action(args):
     elif args.action == 'get_metadata_file':
         file_service.get_metadata_file(args.name)
     else:
+        file_service.evaluate_amount('(f-5)')
         logger.info('Try again! You choose wrong action')
 
 
