@@ -2,6 +2,9 @@ import utils
 import file_service
 import pytest
 import re
+import os
+from unittest import mock
+import coverage
 
 rules = [
     ['1', '1', '3', 'rule 1', 'Rule 1: Marker DA + Marker IB = Marker RA', 'LHS', 'mark_da', '700', '+', 'N', '1'],
@@ -21,11 +24,23 @@ rules = [
 ]
 
 
+@pytest.fixture(scope='function')
+def temp_file(tmp_path):
+    file = tmp_path / "filename.txt"
+    file.write_text('Content')
+    return file
+
+
 def test_read_file():
     with open('test1.txt', 'w') as file:
         file.write('some text')
     data = 'some text'
     assert file_service.read_file('test1.txt') == data
+
+
+def test_delete_file(temp_file):
+    file_service.delete_file(temp_file)
+    assert os.path.exists(temp_file) is False
 
 
 @pytest.mark.parametrize("path_to_file", ['InputOutputValidation_v2.xlsx'])
@@ -45,7 +60,7 @@ def test_read_excel_file_all_columns(path_to_file):
 
 def test_symbols_for_name():
     name = utils.define_symbols_for_name(True, True)
-    assert True if re.search('[^A-za-z0-9]', name) else False == False
+    assert not re.search('[^A-za-z0-9]', name)
 
 
 def test_zero_length_file_name():
@@ -57,8 +72,8 @@ def test_extension_file(extension):
     assert utils.generate_file_name(5, extension, True, True).endswith(extension)
 
 
-@pytest.mark.parametrize('formulas, expect_result', [('os.remove("somefile.txt")',None),
-                                               ('4+3', 7), ('2+2*2', 6)])
+@pytest.mark.parametrize('formulas, expect_result', [('os.remove("somefile.txt")', None),
+                                                        ('4+3', 7), ('2+2*2', 6)])
 def test_evaluate_amount(formulas, expect_result):
     assert file_service.evaluate_amount(formulas) == expect_result
 
@@ -94,3 +109,7 @@ def test_split_formula(formulas, expected_results):
     assert file_service.split_formula(formulas) == expected_results
 
 
+@mock.patch("utils.generate_file_name")
+def test_generate_file_name(mock_generate_file_name):
+    mock_generate_file_name.return_value = 'file.txt'
+    assert utils.generate_file_name(4, '.txt', True, True) == 'file.txt'
