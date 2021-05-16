@@ -187,12 +187,12 @@ def add_additional_columns(data):
 
 data = add_additional_columns(data)
 
-SPLIT_FORMULA_SIGNS = re.compile('<=|=|<>|!=|>=|=<|=>|>|<|==')
+SPLIT_FORMULA_SIGNS = re.compile('<=|==|<>|!=|>=|=<|=>|>|<|=')
 EQUAL_SIGN = re.compile('==|<=|>=|!=|=<|=>')
 
 
 def split_formula(result_amount):
-    """Split formulas on two parts by divider '<=|=|<>|!=|>=|=<|=>|>|<|=='
+    """Split formulas on two parts by divider '<=|==|<>|!=|>=|=<|=>|>|<|='
            Args:
                result_amount (str):
            Returns:
@@ -262,6 +262,7 @@ def calculate_results(data):
         result_lhs = evaluate_amount(lhs)
         result_rhs = evaluate_amount(rhs)
         results[len(results) - 1].extend([status, result_lhs, result_rhs])
+    return data
 
 
 calculate_results(data)
