@@ -1,7 +1,9 @@
 from string import digits, ascii_letters
 import random
 import datetime
+from collections import Counter
 
+RULE_ID = 1
 
 def define_symbols_for_name(letter=False, digit=False):
     """ Define what kind of symbols can be in the name of file
@@ -44,3 +46,28 @@ def conversion_date_time(data):
         DateTime (datetime):  in format %Y-%m-%d %H:%M:%S
     """
     return datetime.datetime.fromtimestamp(data).strftime('%Y-%m-%d %H:%M:%S')
+
+
+def add_auxiliary_columns(data):
+    """Add 3 auxiliary columns: Order, Rule Order, Rule Rows which help parse the rules
+    Args:
+        data (List[list]): Data from excel file
+    Returns:
+        List[list], which contains info about each rules.
+    """
+
+    unique_rules = Counter([row[RULE_ID] for row in data])
+    rule_item = data[0][RULE_ID]
+    counter_rule = 1
+    new_data = []
+    for counter, rule in enumerate(data, start=1):
+        rule_id, *other = rule
+        if rule_item == rule_id:
+            new_data.append([counter, counter_rule, unique_rules[rule_id], rule_id, *other])
+            counter_rule += 1
+        else:
+            counter_rule = 1
+            new_data.append([counter, counter_rule, unique_rules[rule_id], rule_id, *other])
+            counter_rule += 1
+            rule_item = rule[RULE_ID]
+    return new_data
