@@ -56,11 +56,11 @@ def add_auxiliary_columns(data):
         List[list], which contains info about each rules.
     """
 
-    unique_rules = Counter([row[RULE_ID] for row in data])
-    rule_item = data[0][RULE_ID]
+    unique_rules = Counter([row[RULE_ID] for row in data[1:]])
+    rule_item = data[1][RULE_ID]
     counter_rule = 1
     new_data = []
-    for counter, rule in enumerate(data, start=1):
+    for counter, rule in enumerate(data[1:], start=1):
         rule_id, *other = rule
         if rule_item == rule_id:
             new_data.append([counter, counter_rule, unique_rules[rule_id], rule_id, *other])

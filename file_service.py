@@ -83,7 +83,7 @@ def get_metadata_file(path_to_file):
         logger.error("File wasn't found for getting meta data")
 
 
-def read_csv_files(path_to_file, delimiter=','):
+def read_csv_file(path_to_file, delimiter=','):
     """Read csv file with delimiter specified by user.
         Args:
             path_to_file (srt): Path to file
@@ -116,7 +116,7 @@ def read_json_file(path_to_file):
         logger.error("File for reading json file wasn't found")
 
 
-def get_cell_data(worksheet, x, y):
+def _get_cell_data(worksheet, x, y):
     """Get data from the cell in Excel file.
            Args:
                worksheet (obj): Active worksheet from Excel file
@@ -141,7 +141,7 @@ def read_excel_file(path_to_file):
     try:
         wb = openpyxl.load_workbook(path_to_file)
         worksheet = wb.active
-        return [[get_cell_data(worksheet, row, column)
+        return [[_get_cell_data(worksheet, row, column)
                  for column in range(1, worksheet.max_column + 1)]
                 for row in range(1, worksheet.max_row + 1)]
     except FileNotFoundError:
@@ -150,8 +150,18 @@ def read_excel_file(path_to_file):
 
 data = read_excel_file('InputOutputValidation_v2.xlsx')
 
+RULE_ID = 3
+RULE_DESCR = 4
+CELL_ID = 6
+AMOUNT = 7
+EXPRESSION = 8
+IF_NEGATIVE = 9
+DIVIDER = 10
+CELL_ID_EXPR = 11
+AMOUNT_EXPR = 12
 
-def add_additional_columns(data):
+
+def _add_additional_columns(data):
     """Add two additional columns for concatenation cell id with expression and divider
     and amount with expression and divider.
            Args:
@@ -162,22 +172,22 @@ def add_additional_columns(data):
     head = 0
     content = [data[head]]
     content[0].extend(['cell_id_expression', 'amount_expression'])
-    for index_row in range(1, len(data)):
-        content.append(data[index_row])
+    for index_row, row in enumerate(data[1:], start=1):
+        content.append(row)
 
-        cell_id_divider = f'{data[index_row][6]}/{data[index_row][10]}'\
-            if int(data[index_row][10]) > 1 else data[index_row][6]
+        cell_id_divider = f'{row[CELL_ID]}/{row[DIVIDER]}'\
+            if int(row[DIVIDER]) > 1 else row[CELL_ID]
 
-        cell_id_expression = f"({cell_id_divider}{data[index_row][8].replace('(', '')}" \
-            if data[index_row][8].startswith('(') else cell_id_divider + data[index_row][8]
+        cell_id_expression = f"({cell_id_divider}{row[EXPRESSION].replace('(', '')}" \
+            if row[EXPRESSION].startswith('(') else cell_id_divider + row[EXPRESSION]
 
-        sign_value = data[index_row][7] if int(data[index_row][7]) > 0 else '0'
+        sign_value = row[AMOUNT] if int(row[AMOUNT]) > 0 else '0'
 
-        amount_divider = f'{sign_value}/{data[index_row][10]}' \
-            if int(data[index_row][10]) > 1 else sign_value
+        amount_divider = f'{sign_value}/{row[DIVIDER]}' \
+            if int(row[DIVIDER]) > 1 else sign_value
 
-        amount_expression = f"({amount_divider}{data[index_row][8].replace('(', '')}" \
-            if data[index_row][8].startswith('(') else amount_divider + data[index_row][8]
+        amount_expression = f"({amount_divider}{row[EXPRESSION].replace('(', '')}" \
+            if row[EXPRESSION].startswith('(') else amount_divider + row[EXPRESSION]
 
         content[index_row].append(cell_id_expression)
         content[index_row].append(amount_expression)
@@ -185,13 +195,11 @@ def add_additional_columns(data):
     return content
 
 
-data = add_additional_columns(data)
-
 SPLIT_FORMULA_SIGNS = re.compile('<=|==|<>|!=|>=|=<|=>|>|<|=')
 EQUAL_SIGN = re.compile('==|<=|>=|!=|=<|=>')
 
 
-def split_formula(result_amount):
+def _split_formula(result_amount):
     """Split formulas on two parts by divider '<=|==|<>|!=|>=|=<|=>|>|<|='
            Args:
                result_amount (str):
@@ -204,7 +212,7 @@ def split_formula(result_amount):
 check_not_math_signs = re.compile(r'[^0-9=<>/*\-+()%! ]')
 
 
-def evaluate_amount(result_amount):
+def _evaluate_amount(result_amount):
     """Evaluate the expressions of the formula'
            Args:
                result_amount (str):
@@ -220,7 +228,7 @@ def evaluate_amount(result_amount):
         else eval(result_amount.replace("<>", "!=").replace("=<", "<=").replace("=>", ">="))
 
 
-def combine_formulas(data):
+def _combine_formulas(data):
     """Combine rows with cell_id_expression and amount_expression to get full formulas
     and expression.
            Args:
@@ -231,22 +239,19 @@ def combine_formulas(data):
     content = []
     for row in data[1:]:
         if row[1] == '1':
-            content.append([row[3], row[4]])
-            col_res_formula_txt = row[11]
-            col_res_formula_amt = row[12]
+            content.append([row[RULE_ID], row[RULE_DESCR]])
+            col_res_formula_txt = row[CELL_ID_EXPR]
+            col_res_formula_amt = row[AMOUNT_EXPR]
         elif row[1] != '1':
-            col_res_formula_txt += row[11]
-            col_res_formula_amt += row[12]
+            col_res_formula_txt += row[CELL_ID_EXPR]
+            col_res_formula_amt += row[AMOUNT_EXPR]
         if row[1] == row[2]:
             content[len(content) - 1].extend([col_res_formula_txt, col_res_formula_amt])
 
     return content
 
 
-data = combine_formulas(data)
-
-
-def calculate_results(data):
+def _calculate_results(data):
     """ Calculate results formulas.
            Args:
                data (List[list]): Data
@@ -257,14 +262,18 @@ def calculate_results(data):
 
     for row in data:
         results.append(row)
-        status = evaluate_amount(row[-1])
+        status = _evaluate_amount(row[-1])
         lhs, rhs = SPLIT_FORMULA_SIGNS.split(row[-1])
-        result_lhs = evaluate_amount(lhs)
-        result_rhs = evaluate_amount(rhs)
+        result_lhs = _evaluate_amount(lhs)
+        result_rhs = _evaluate_amount(rhs)
         results[len(results) - 1].extend([status, result_lhs, result_rhs])
     return data
 
 
-calculate_results(data)
+def parse_rules(path_to_file):
+    data = read_excel_file(path_to_file)
+    data = _add_additional_columns(data)
+    data = _combine_formulas(data)
+    return _calculate_results(data)
 
-
+print(parse_rules('InputOutputValidation_v2.xlsx'))
