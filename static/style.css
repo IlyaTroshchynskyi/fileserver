@@ -1,0 +1,38 @@
+html, body {
+    font-family: 'Arial';
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+}
+*,*:before,*:after{
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+}
+
+h2 {
+    padding-top: 10px;
+    text-align: center;
+    background-color: darkgrey;
+    height: 60px;
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+.nav-tabs {
+    margin-top: 0;
+    height: 60px;
+
+}
+
+.nav-item {
+    text-align: center;
+    height: 60px;
+    width: 200px;
+}
+
+.nav-link {
+    padding-top: 16px;
+    height: 60px;
+}
