@@ -5,3 +5,4 @@ InputOutputValidation.xlsx
 test_data/
 .pytest_cache/
 *.log
+tests_file/

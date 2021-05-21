@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Update file
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="row justify-content-center">
+        <form method="POST" action="">
+          <div class="form-group">
+              <p><label for="content">Content of the file</label></p>
+            <textarea id="content" name="content" rows="4" cols="50">{{ content }}</textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
