@@ -20,3 +20,9 @@ def init_logger(name):
     logger.addHandler(sh)
     logger.addHandler(fh)
     logger.info("Logger was initialized")
+
+
+
+class Configuration:
+
+    SECRET_KEY = 'something_very_secret'
