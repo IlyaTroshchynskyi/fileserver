@@ -40,3 +40,14 @@ h2 {
 .list-file {
     height: 20px;
 }
+
+.row justify-content-center{
+    height: 200px;
+
+}
+
+.container {
+    padding: 0px;
+    margin: 0px;
+    max-width: 100%;
+}

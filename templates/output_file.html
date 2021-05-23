@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Upload file
+{% endblock %}
+
+{% block header %}
+  Show output files from the server
+{% endblock %}
+
+{% block body %}
+
+  <div class="container">
+    {% if extension == ".json" or extension == ".txt" %}
+      <div class="col justify-content-center">
+        {{ content }}
+      </div>
+    {% else %}
+      {% for row in content %}
+        <div class="row justify-content-center">
+          {{ row }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+{% endblock %}

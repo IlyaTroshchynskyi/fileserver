@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Upload file
+{% endblock %}
+
+{% block header %}
+    Parsing and calculation rules
+{% endblock %}
+
+{% block body %}
+
+  <div class="row justify-content-center">
+    <form method="POST" action="{{ url_for('pars_rules') }}" enctype=multipart/form-data>
+      <input type=file name=file>
+        <input type=submit value=Upload>
+    </form>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <table class="table table-hover">
+          <thead class="thead-light">
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">{{content[0][0]}}</th>
+              <th scope="col">{{content[0][1]}}</th>
+              <th scope="col">{{content[0][2]}}</th>
+              <th scope="col">{{content[0][3]}}</th>
+              <th scope="col">{{content[0][4]}}</th>
+              <th scope="col">{{content[0][5]}}</th>
+              <th scope="col">{{ content[0][6]}}</th>
+              </tr>
+          </thead>
+
+          <tbody>
+            {% for row in content[1:] %}            
+              <tr class='{{"table-danger" if False in row else "table-success"}}'>
+                <td>#</td>
+                <th scope="row">{{row[0]}}</th>
+                <td>{{ row[1] }}</td>
+                <td>{{ row[2] }}</td>
+                <td>{{ row[3] }}</td>
+                <td>{{ row[4] }}</td>
+                <td>{{ row[5] }}</td>
+                <td>{{ row[6] }}</td>
+                </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
