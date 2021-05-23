@@ -148,8 +148,6 @@ def read_excel_file(path_to_file):
         logger.error(f"Excel file wasn't found for reading with path: {path_to_file}")
 
 
-data = read_excel_file('InputOutputValidation_v2.xlsx')
-
 RULE_ID = 3
 RULE_DESCR = 4
 CELL_ID = 6
@@ -267,7 +265,7 @@ def _calculate_results(data):
         result_lhs = _evaluate_amount(lhs)
         result_rhs = _evaluate_amount(rhs)
         results[len(results) - 1].extend([status, result_lhs, result_rhs])
-    return data
+    return results
 
 
 def parse_rules(path_to_file):
@@ -275,5 +273,3 @@ def parse_rules(path_to_file):
     data = _add_additional_columns(data)
     data = _combine_formulas(data)
     return _calculate_results(data)
-
-print(parse_rules('InputOutputValidation_v2.xlsx'))
