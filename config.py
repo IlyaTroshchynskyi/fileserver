@@ -1,6 +1,6 @@
 import logging
 import logging.handlers
-
+import os
 
 ONE_MB = 1000000
 
@@ -22,7 +22,8 @@ def init_logger(name):
     logger.info("Logger was initialized")
 
 
-
 class Configuration:
 
     SECRET_KEY = 'something_very_secret'
+    UPLOAD_FOLDER = os.path.join(os.getcwd(), 'tests_file')
+    ALLOWED_EXTENSIONS = {'txt', 'pdf', 'xlsx', 'json', 'csv'}
