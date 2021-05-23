@@ -4,7 +4,12 @@ from flask import Flask, render_template, redirect, url_for, request, flash, \
 import file_service
 from config import Configuration
 from werkzeug.utils import secure_filename
+import logging
+from config import init_logger
 
+
+init_logger('app')
+logger = logging.getLogger("app.main")
 
 app = Flask(__name__)
 app.config.from_object(Configuration)
@@ -110,6 +115,27 @@ def get_meta_data(file_name):
     path = define_path_to_file(file_name)
     data = file_service.get_metadata_file(path)
     return data
+
+
+@app.route('/create-file', methods=['GET', 'POST'])
+def create_file():
+    length_name = extension = content = ''
+    letter = digit = True
+    if request.method == 'POST':
+        length_name = int(request.form.get('length', ''))
+        extension = request.form.get('extension', '')
+        content = request.form.get('content', '')
+        letter = True if request.form.get('letter', '') else False
+        digit = True if request.form.get('digit', '') else False
+
+        file_service.create_file(length_name=length_name,
+                                 extension=extension,
+                                 content=content,
+                                 letter=letter,
+                                 digit=digit)
+        flash('File was created successfully', 'success')
+        return redirect(url_for('index'))
+    return render_template('create_file.html')
 
 
 if __name__ == '__main__':
