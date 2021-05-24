@@ -5,7 +5,7 @@ import csv
 import json
 import logging
 import re
-
+import config
 
 logger = logging.getLogger('app.file_service')
 
@@ -39,9 +39,10 @@ def create_file(length_name, extension, content, letter, digit):
                                              letter=letter,
                                              digit=digit,
                                              extension=extension)
-        with open(file_name, 'x') as file:
+        with open(os.path.join(config.Configuration.UPLOAD_FOLDER, file_name), 'x') as file:
             file.write(content)
             logger.info(f'File was created with name {file_name}')
+            return file_name
     except FileExistsError:
         logger.error("File wasn't created because you had tried"
                      " to create file with the existing name")
