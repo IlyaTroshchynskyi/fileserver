@@ -25,8 +25,9 @@ def index():
     return render_template('index.html', files=files)
 
 
-@app.route('/delete/<file_name>', methods=['POST'])
+@app.route('/delete/<file_name>', methods=['POST', 'GET'])
 def delete_file(file_name):
+
     path_to_file = define_path_to_file(file_name)
     file_service.delete_file(path_to_file)
     return redirect(url_for('index'))
@@ -88,7 +89,7 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            flash(f'File {file.filename} was successfully uploaded', category='success')
+            flash(f'File {file.filename} was successfully uploaded', 'success')
             return redirect(url_for('index'))
 
     return render_template('upload_file.html')
@@ -128,12 +129,12 @@ def create_file():
         letter = True if request.form.get('letter', '') else False
         digit = True if request.form.get('digit', '') else False
 
-        file_service.create_file(length_name=length_name,
+        file_name = file_service.create_file(length_name=length_name,
                                  extension=extension,
                                  content=content,
                                  letter=letter,
                                  digit=digit)
-        flash('File was created successfully', 'success')
+        flash(f'File: "{file_name}" was created successfully', 'success')
         return redirect(url_for('index'))
     return render_template('create_file.html')
 
