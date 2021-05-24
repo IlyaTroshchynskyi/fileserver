@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Update file
+{% endblock %}
+
+{% block header %}
+    Create file
+{% endblock %}
+
+{% block body %}
+
+  <div class="container">
+    <div class="row justify-content-center">
+      <form method="POST" action="{{ url_for('create_file') }}">
+        <div class="form-group">
+          <label for="length">Enter length of the file name</label><br>
+          <input type="number" id="length" name="length" min="3" max="15" step="1" value="3">
+        </div>
+      <div class="form-group">
+        <label for="extension">Choose extension for your file</label><br>
+          <select id="extension" name="extension">
+            <option value=".txt">.txt</option>
+            <option value=".csv">.csv</option>
+            <option value=".xlsx">.xlsx</option>
+            <option value=".json">.json</option>
+            <option value=".pdf">.pdf</option>
+          </select>
+      </div>
+         <div class="form-group">
+            <label for="content">Enter content for your file</label><br>
+            <textarea name="content" rows="3" cols="30" id="content"></textarea>
+          </div>
+          <div class="form-group">
+            <input type="checkbox" checked id="letter" name="letter" value="True">
+            <label for="letter"> Do you want use letters for file name?</label><br>
+            <input type="checkbox" checked id="digit" name="digit" value="True">
+            <label for="digit"> Do you want use digits for file name?</label><br>
+
+        <button type="submit" class="btn btn-primary">Send</button>
+      </form>
+    </div>
+  </div>
+
+{% endblock %}
