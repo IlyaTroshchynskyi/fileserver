@@ -4,7 +4,10 @@ import pytest
 import re
 import os
 from unittest import mock
+from app import app
 import coverage
+import http
+
 
 rules = [
     ['1', '1', '3', 'rule 1', 'Rule 1: Marker DA + Marker IB = Marker RA', 'LHS', 'mark_da', '700', '+', 'N', '1'],
@@ -75,24 +78,24 @@ def test_extension_file(extension):
 @pytest.mark.parametrize('formulas, expect_result', [('os.remove("somefile.txt")', None),
                                                         ('4+3', 7), ('2+2*2', 6)])
 def test_evaluate_amount(formulas, expect_result):
-    assert file_service.evaluate_amount(formulas) == expect_result
+    assert file_service._evaluate_amount(formulas) == expect_result
 
 
 @pytest.fixture(scope="module")
 def add_columns():
-    return file_service.add_additional_columns(rules)
+    return file_service._add_additional_columns(rules)
 
 
 def test_cal_result_exist_all_rules(add_columns):
     data = add_columns
-    data = file_service.combine_formulas(data)
-    data = file_service.calculate_results(data)
+    data = file_service._combine_formulas(data)
+    data = file_service._calculate_results(data)
     assert data[-1][0] == rules[-1][3]
 
 
 def test_combine_formulas_contain_all_rules(add_columns):
     data = add_columns
-    data = file_service.combine_formulas(data)
+    data = file_service._combine_formulas(data)
     data = set([row[0] for row in data])
     assert len(data.difference(set([rule[3] for rule in rules[1:]]))) == 0
 
@@ -106,10 +109,34 @@ def test_combine_formulas_contain_all_rules(add_columns):
                                                         ('1>1', ['1', '1']),
                                                         ('1=1',  ['1', '1'])])
 def test_split_formula(formulas, expected_results):
-    assert file_service.split_formula(formulas) == expected_results
+    assert file_service._split_formula(formulas) == expected_results
 
 
 @mock.patch("utils.generate_file_name")
 def test_generate_file_name(mock_generate_file_name):
     mock_generate_file_name.return_value = 'file.txt'
     assert utils.generate_file_name(4, '.txt', True, True) == 'file.txt'
+
+
+@pytest.fixture
+def client():
+
+    with app.test_client() as client:
+        yield client
+
+
+def test_index(client):
+    resp = client.get('/')
+    assert resp.status_code == http.HTTPStatus.OK
+
+
+def test_create_file(client):
+    resp = client.get('/create-file')
+    assert resp.status_code == http.HTTPStatus.OK
+
+#
+# def test_create_file1(client):
+#     resp = client.post('/create-file', data=dict(length=5, extension='.txt',
+#     content='dfd', letter=True, digit=True), follow_redirects=True)
+#     print(resp.data)
+#     assert b'was created successfully' not in resp.data
