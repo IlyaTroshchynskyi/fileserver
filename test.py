@@ -1,12 +1,13 @@
-import utils
-import file_service
-import pytest
 import re
 import os
 from unittest import mock
-from app import app
 import coverage
 import http
+import json
+import pytest
+import utils
+import file_service
+from app import app
 
 
 rules = [
@@ -25,7 +26,7 @@ rules = [
      '1'],
     ['12', '5', '5', 'rule 4', 'Rule 4: (A1+A2+A3)/days number in 2nd half month = B1', 'RHS', 'B1', '100', '', 'N', '1'],
 ]
-
+file_param = {"length_name": 5, "extension": ".txt", "content": "HI REST",  "letter": True, "digit": False}
 
 @pytest.fixture(scope='function')
 def temp_file(tmp_path):
@@ -35,10 +36,10 @@ def temp_file(tmp_path):
 
 
 def test_read_file():
-    with open('test1.txt', 'w') as file:
+    with open('test_data/test1.txt', 'w') as file:
         file.write('some text')
     data = 'some text'
-    assert file_service.read_file('test1.txt') == data
+    assert file_service.read_file('test_data/test1.txt') == data
 
 
 def test_delete_file(temp_file):
@@ -46,17 +47,17 @@ def test_delete_file(temp_file):
     assert os.path.exists(temp_file) is False
 
 
-@pytest.mark.parametrize("path_to_file", ['InputOutputValidation_v2.xlsx'])
+@pytest.mark.parametrize("path_to_file", [os.path.join(os.getcwd(), 'test_data', 'InputOutputValidation_v2.xlsx')])
 def test_read_excel_file(path_to_file):
     assert len(file_service.read_excel_file(path_to_file)) > 0
 
 
-@pytest.mark.parametrize("path_to_file", ['InputOutputValidation_v2.xlsx'])
+@pytest.mark.parametrize("path_to_file", [os.path.join(os.getcwd(), 'test_data', 'InputOutputValidation_v2.xlsx')])
 def test_read_excel_file_all_rows(path_to_file):
     assert len(file_service.read_excel_file(path_to_file)) == 13
 
 
-@pytest.mark.parametrize("path_to_file", ['InputOutputValidation_v2.xlsx'])
+@pytest.mark.parametrize("path_to_file", [os.path.join(os.getcwd(), 'test_data', 'InputOutputValidation_v2.xlsx')])
 def test_read_excel_file_all_columns(path_to_file):
     assert len(file_service.read_excel_file(path_to_file)[0]) == 11
 
@@ -134,9 +135,42 @@ def test_create_file(client):
     resp = client.get('/create-file')
     assert resp.status_code == http.HTTPStatus.OK
 
-#
-# def test_create_file1(client):
-#     resp = client.post('/create-file', data=dict(length=5, extension='.txt',
-#     content='dfd', letter=True, digit=True), follow_redirects=True)
-#     print(resp.data)
-#     assert b'was created successfully' not in resp.data
+
+def test_update_file(client):
+    file_name = file_service.create_file(*file_param.values())
+    resp = client.get(f'/update/{file_name}')
+    assert resp.status_code == http.HTTPStatus.OK
+
+
+def test_get_meta_data1(client):
+    file_name = file_service.create_file(*file_param.values())
+    resp = client.get(f'/get-meta-data/{file_name}')
+    assert resp.status_code == http.HTTPStatus.OK
+
+
+def test_parse_rules(client):
+
+    resp = client.get('/parse-rules')
+    assert resp.status_code == http.HTTPStatus.OK
+
+
+def test_upload_file(client):
+    resp = client.get('/upload_file')
+    assert resp.status_code == http.HTTPStatus.OK
+
+
+def test_create_file1(client):
+    resp = client.get('/create-file')
+    assert resp.status_code == http.HTTPStatus.OK
+
+
+def test_create_file1(client):
+    resp = client.post('/files', data=dict(length=5, extension='.txt',
+    content='dfd', letter=True, digit=True), follow_redirects=True)
+    assert b'was created successfully' not in resp.data
+
+
+def test_update_file1(client):
+    resp = client.put('/files/3jQ.txt', data=dict(content="TEST CONTENT"))
+    print(resp)
+    assert b'TEST CONTENT' not in resp.data
