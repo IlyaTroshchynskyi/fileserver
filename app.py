@@ -1,12 +1,10 @@
 import os
+import logging
 from flask import Flask, render_template, redirect, url_for, request, flash, \
     send_from_directory
-import file_service
-from config import Configuration
 from werkzeug.utils import secure_filename
-import logging
-from config import init_logger
-
+from config import init_logger, Configuration, TEST_FILES_DIR
+import file_service
 
 init_logger('app')
 logger = logging.getLogger("app.main")
@@ -16,12 +14,12 @@ app.config.from_object(Configuration)
 
 
 def define_path_to_file(file_name):
-    return os.path.join(os.getcwd(), 'tests_file', file_name)
+    return os.path.join(os.getcwd(), TEST_FILES_DIR, file_name)
 
 
 @app.route('/')
 def index():
-    files = [file for file in os.listdir(os.path.join(os.getcwd(), 'tests_file'))]
+    files = [file for file in os.listdir(os.path.join(os.getcwd(), TEST_FILES_DIR))]
     return render_template('index.html', files=files)
 
 
@@ -56,8 +54,7 @@ def update_file(file_name):
     if request.method == 'POST':
         content = request.form.get('content', '')
 
-        with open(path, 'w') as file:
-            file.write(content)
+        file_service.update_file_txt(path, content)
 
         flash(f'File {file_name} was successfully updated', category='success')
         return redirect(url_for('index'))
@@ -96,7 +93,7 @@ def upload_file():
 
 
 @app.route('/parse-rules', methods=['GET', 'POST'])
-def pars_rules():
+def parse_rules():
     content = [['Rule ID', 'Rule description', 'Result formula', 'Result amount', 'Status', 'LHS', 'RHS']]
     if request.method == 'POST':
         file = request.files['file']
