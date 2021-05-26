@@ -1,6 +1,6 @@
-import file_service
 import argparse
 import logging
+import file_service
 from config import init_logger
 
 
