@@ -1,11 +1,11 @@
 import os
-import utils
-import openpyxl
 import csv
 import json
-import logging
 import re
+import logging
 import config
+import openpyxl
+import utils
 
 logger = logging.getLogger('app.file_service')
 
@@ -274,3 +274,13 @@ def parse_rules(path_to_file):
     data = _add_additional_columns(data)
     data = _combine_formulas(data)
     return _calculate_results(data)
+
+
+def update_file_txt(path_to_file, content):
+    try:
+        with open(path_to_file, 'w') as file:
+            file.write(content)
+            logger.info(f'File {os.path.basename(path_to_file)} was updated with content\n'
+                        f'{content}')
+    except FileNotFoundError:
+        logger.error("File for updating wasn't found")
