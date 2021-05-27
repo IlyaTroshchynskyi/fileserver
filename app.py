@@ -19,7 +19,8 @@ def define_path_to_file(file_name):
 
 @app.route('/')
 def index():
-    files = [file for file in os.listdir(os.path.join(os.getcwd(), TEST_FILES_DIR))]
+    working_dir = os.path.join(os.getcwd(), TEST_FILES_DIR)
+    files = [file for file in os.listdir(working_dir) if os.path.isfile(f'{working_dir}/{file}')]
     return render_template('index.html', files=files)
 
 
