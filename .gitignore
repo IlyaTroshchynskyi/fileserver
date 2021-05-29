@@ -6,3 +6,4 @@ test_data/
 .pytest_cache/
 *.log
 test_files/
+fileserver.db
