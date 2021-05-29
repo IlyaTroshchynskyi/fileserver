@@ -51,3 +51,8 @@ h2 {
     margin: 0px;
     max-width: 100%;
 }
+
+.error{
+    text-align: center;
+    background: yealow;
+}
