@@ -3,7 +3,7 @@ import csv
 import json
 import re
 import logging
-import config
+from fileserver import config
 import openpyxl
 import utils
 

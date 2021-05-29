@@ -5,6 +5,7 @@ import os
 ONE_MB = 1000000
 TEST_FILES_DIR = 'test_files'
 
+
 def init_logger(name):
     logger = logging.getLogger(name)
     FORMAT = '%(asctime)s - %(name)s:%(lineno)s - %(levelname)s ' \
@@ -27,3 +28,7 @@ class Configuration:
     SECRET_KEY = 'something_very_secret'
     UPLOAD_FOLDER = os.path.join(os.getcwd(), TEST_FILES_DIR)
     ALLOWED_EXTENSIONS = {'txt', 'xlsx', 'json', 'csv'}
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///fileserver.db'
+    SECURITY_PASSWORD_SALT = 'salt'
+    SECURITY_PASSWORD_HASH = 'sha512_crypt'

@@ -2,7 +2,7 @@ import argparse
 import logging
 import file_service
 from config import init_logger
-
+from run import run_application
 
 init_logger('app')
 logger = logging.getLogger("app.main")
@@ -56,6 +56,8 @@ def choose_action(args):
         file_service.delete_file(args.name)
     elif args.action == 'get_metadata_file':
         file_service.get_metadata_file(args.name)
+    elif args.action == 'run':
+        run_application()
     else:
         file_service.evaluate_amount('(f-5)')
         logger.info('Try again! You choose wrong action')

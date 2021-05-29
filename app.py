@@ -3,6 +3,9 @@ import logging
 from flask import Flask, render_template, redirect, url_for, request, flash, \
     send_from_directory
 from werkzeug.utils import secure_filename
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask_security import SQLAlchemyUserDatastore, Security, login_required, current_user
 from config import init_logger, Configuration, TEST_FILES_DIR
 import file_service
 
@@ -11,6 +14,11 @@ logger = logging.getLogger("app.main")
 
 app = Flask(__name__)
 app.config.from_object(Configuration)
+db = SQLAlchemy(app)
+mg = Migrate(app, db)
+from models import User, Role
+users = SQLAlchemyUserDatastore(db, User, Role)
+security = Security(app, users)
 
 
 def define_path_to_file(file_name):
@@ -25,6 +33,7 @@ def index():
 
 
 @app.route('/delete/<file_name>', methods=['POST', 'GET'])
+@login_required
 def delete_file(file_name):
 
     path_to_file = define_path_to_file(file_name)
@@ -33,6 +42,7 @@ def delete_file(file_name):
 
 
 @app.route('/read_file/<file_name>')
+@login_required
 def read_file(file_name):
     path = define_path_to_file(file_name)
     extension = os.path.splitext(file_name)[-1]
@@ -50,6 +60,7 @@ def read_file(file_name):
 
 
 @app.route('/update/<file_name>', methods=['GET', 'POST'])
+@login_required
 def update_file(file_name):
     path = define_path_to_file(file_name)
     if request.method == 'POST':
@@ -75,6 +86,7 @@ def uploaded_file(filename):
 
 
 @app.route('/upload_file', methods=['GET', 'POST'])
+@login_required
 def upload_file():
     if request.method == 'POST':
         if 'file' not in request.files:
@@ -94,6 +106,7 @@ def upload_file():
 
 
 @app.route('/parse-rules', methods=['GET', 'POST'])
+@login_required
 def parse_rules():
     content = [['Rule ID', 'Rule description', 'Result formula', 'Result amount', 'Status', 'LHS', 'RHS']]
     if request.method == 'POST':
@@ -110,6 +123,7 @@ def parse_rules():
 
 
 @app.route('/get-meta-data/<file_name>')
+@login_required
 def get_meta_data(file_name):
     path = define_path_to_file(file_name)
     data = file_service.get_metadata_file(path)
@@ -117,6 +131,7 @@ def get_meta_data(file_name):
 
 
 @app.route('/create-file', methods=['GET', 'POST'])
+@login_required
 def create_file():
     length_name = extension = content = ''
     letter = digit = True
@@ -137,5 +152,22 @@ def create_file():
     return render_template('create_file.html')
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+
+@app.route("/register", methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    if request.method == 'POST':
+        email = request.form.get('email', '')
+        password = request.form.get('password', '')
+        password1 = request.form.get('password2', '')
+        if password1 == password:
+            users.create_user(email=email, password=password)
+            db.session.commit()
+            flash(f'Your account has been created! You are able to log in', 'success')
+            return redirect(url_for('security.login'))
+    return render_template('register_user.html')
