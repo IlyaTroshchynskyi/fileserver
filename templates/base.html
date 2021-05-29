@@ -22,7 +22,7 @@
       {% endblock %}
     </h2>
   </header>
-  <ul class="nav nav-tabs bg-dark">
+  <ul class="nav nav-pills nav-justified bg-dark">
     <li class="nav-item">
       <a class="nav-link" href="{{ url_for('index') }}">List of files</a>
     </li>
@@ -32,15 +32,25 @@
     <li class="nav-item">
       <a class="nav-link" href="{{ url_for('parse_rules') }}">Parsing rules</a>
     </li>
-    <li class="nav-item item-right">
+    <li class="nav-item">
       <a class="nav-link" href="{{ url_for('upload_file') }}">Upload file</a>
     </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{{ url_for('security.login') }}">Login</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{{ url_for('security.logout') }}">Logout</a>
+    </li>
+        <li class="nav-item">
+      <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+    </li>
+
   </ul>
         
 {% block body %}
 
 
-{% endblock body %}
+{% endblock %}
 
 
     <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
