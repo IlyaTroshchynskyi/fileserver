@@ -29,28 +29,6 @@
               <tr>
                 <td>{{ file }}</td>
                 <td><a href="javascript:del('{{ file }}')" class="btn btn-danger btn-sm m-1">Delete file</a></td>
-<!--                <td><button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal">Delete File</button>-->
-
-<!--                      &lt;!&ndash; Modal &ndash;&gt;-->
-<!--                  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">-->
-<!--                    <div class="modal-dialog" role="document">-->
-<!--                      <div class="modal-content">-->
-<!--                        <div class="modal-header">-->
-<!--                          <h5 class="modal-title" id="deleteModalLabel">Delete file? {{ file }} </h5>-->
-<!--                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
-<!--                              <span aria-hidden="true">&times</span>-->
-<!--                            </button>-->
-<!--                        </div>-->
-<!--                        <div class="modal-footer">-->
-<!--                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>-->
-<!--                            <form action="{{ url_for('delete_file', file_name=file) }}" method="POST">-->
-<!--                              <input class="btn btn-danger" type="submit" value="Delete">-->
-<!--                            </form>-->
-<!--                        </div>-->
-<!--                      </div>-->
-<!--                    </div>-->
-<!--                  </div>-->
-<!--                </td>-->
                 <td> <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('read_file', file_name=file) }}">Read file</a> </td>
                 <td> <a class='btn btn-secondary btn-sm mt-1 mb-1 {{"visible" if ".txt" in file else "invisible"}} '
                 href="{{ url_for('update_file', file_name=file) }}">Update content</a> </td>
@@ -60,7 +38,34 @@
           </tbody>
         </table>
       </div>
+
     </div>
+     <nav>
+          <nav aria-label="Page navigation example">
+            <ul class="pagination">
+              <li {% if cur_page == 0 %} class="page-item disabled" {% endif %}>
+                <a class="page-link" href="./?page={{cur_page-1}}">Previous</a>
+              </li>
+                {% if cur_page != 0 %}
+                  <li  class="page-item">
+                    <a class="page-link" href="./?page=0">0</a>
+                  </li>
+                {% endif %}
+              {% for page in count_files %}
+              <li {% if page == cur_page %} class="page-item active" {% endif %}>
+                <a class="page-link" href="./?page={{page}}">{{page}}</a>
+              </li>
+              {% endfor %}
+              <li class="page-item"><a class="page-link" href="#">.....</a></li>
+              <li class="page-item">
+                <a class="page-link" href="./?page={{last_page}}">{{ last_page }}</a>
+              </li>
+              <li {% if last_page == cur_page %} class="page-item disabled" {% endif %}>
+                <a class="page-link" href="./?page={{cur_page}}">Next</a>
+              </li>
+            </ul>
+          </nav>
+    </nav>
   </div>
 <script type="text/javascript">
 
