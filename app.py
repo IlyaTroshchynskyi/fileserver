@@ -27,9 +27,18 @@ def define_path_to_file(file_name):
 
 @app.route('/')
 def index():
+    files_per_page = 5
+    page = request.args.get('page', '0')
+    if page.isdigit():
+        page = int(page)
+    else:
+        page = 0
     working_dir = os.path.join(os.getcwd(), TEST_FILES_DIR)
     files = [file for file in os.listdir(working_dir) if os.path.isfile(f'{working_dir}/{file}')]
-    return render_template('index.html', files=files)
+    last_page = int(len(files)/5)
+    return render_template('index.html', files=files[page*files_per_page:page*files_per_page+files_per_page],
+                           count_files=range(page, page+2),
+                           cur_page=page, last_page=last_page)
 
 
 @app.route('/delete/<file_name>', methods=['POST', 'GET'])
