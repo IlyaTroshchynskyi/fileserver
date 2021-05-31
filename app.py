@@ -22,22 +22,32 @@ security = Security(app, users)
 
 
 def define_path_to_file(file_name):
+    """Define path to file on the server
+    Args:
+        file_name (srt): File name
+    Returns:
+        path (str): Return path to file
+    """
     return os.path.join(os.getcwd(), TEST_FILES_DIR, file_name)
 
 
 @app.route('/')
 def index():
+    """Show files on the server in browser
+    """
     files_per_page = 5
-    page = request.args.get('page', '0')
+    page = request.args.get('page', '1')
     if page.isdigit():
         page = int(page)
     else:
-        page = 0
+        page = 1
+    logger.info(f'Current page:{page}')
     working_dir = os.path.join(os.getcwd(), TEST_FILES_DIR)
     files = [file for file in os.listdir(working_dir) if os.path.isfile(f'{working_dir}/{file}')]
     last_page = int(len(files)/5)
-    return render_template('index.html', files=files[page*files_per_page:page*files_per_page+files_per_page],
-                           count_files=range(page, page+2),
+    return render_template('index.html',
+                           files=files[(page-1) * files_per_page:(page-1) * files_per_page+files_per_page],
+                           count_files=range(page, page+2 if page <= last_page-2 else last_page),
                            cur_page=page, last_page=last_page)
 
 
@@ -65,6 +75,7 @@ def read_file(file_name):
         content = file_service.read_csv_file(path_to_file=path)
     else:
         content = ''
+    logger.info(f'Content: "{content}" for file: "{file_name}"')
     return render_template('output_file.html', content=content, extension=extension)
 
 
@@ -76,7 +87,7 @@ def update_file(file_name):
         content = request.form.get('content', '')
 
         file_service.update_file_txt(path, content)
-
+        logger.info(f'File: "{file_name}" was successfully updated with contetn "{content}"')
         flash(f'File {file_name} was successfully updated', category='success')
         return redirect(url_for('index'))
 
@@ -85,12 +96,20 @@ def update_file(file_name):
 
 
 def allowed_file(filename):
+    """Split file name by the '.' and check the allowed extension
+    Args:
+        filename (srt): File name
+    """
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in Configuration.ALLOWED_EXTENSIONS
 
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
+    """Upload file on the server to upload directory
+    Args:
+        filename (srt): File name
+    """
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
@@ -109,6 +128,7 @@ def upload_file():
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             flash(f'File {file.filename} was successfully uploaded', 'success')
+            logger.info(f'File {file.filename} was successfully uploaded to {Configuration.UPLOAD_FOLDER}')
             return redirect(url_for('index'))
 
     return render_template('upload_file.html')
@@ -157,6 +177,7 @@ def create_file():
                                  letter=letter,
                                  digit=digit)
         flash(f'File: "{file_name}" was created successfully', 'success')
+        logger.info(f'File: "{file_name}" was created successfully')
         return redirect(url_for('index'))
     return render_template('create_file.html')
 
@@ -178,5 +199,6 @@ def register():
             users.create_user(email=email, password=password)
             db.session.commit()
             flash(f'Your account has been created! You are able to log in', 'success')
+            logger.info(f'Account for user with email: "{email}" was created')
             return redirect(url_for('security.login'))
     return render_template('register_user.html')
