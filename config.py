@@ -7,6 +7,11 @@ TEST_FILES_DIR = 'test_files'
 
 
 def init_logger(name):
+    """Init logger for application. Set formats for writing information to the files and
+    for output to debug.
+    Args:
+        name (srt): name of root logger
+    """
     logger = logging.getLogger(name)
     FORMAT = '%(asctime)s - %(name)s:%(lineno)s - %(levelname)s ' \
              '- FUNCTION=%(funcName)s - %(message)s'
