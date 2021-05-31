@@ -43,12 +43,12 @@
      <nav>
           <nav aria-label="Page navigation example">
             <ul class="pagination">
-              <li {% if cur_page == 0 %} class="page-item disabled" {% endif %}>
+              <li {% if cur_page == 1 %} class="page-item disabled" {% endif %}>
                 <a class="page-link" href="./?page={{cur_page-1}}">Previous</a>
               </li>
-                {% if cur_page != 0 %}
+                {% if cur_page != 1 %}
                   <li  class="page-item">
-                    <a class="page-link" href="./?page=0">0</a>
+                    <a class="page-link" href="./?page=1">1</a>
                   </li>
                 {% endif %}
               {% for page in count_files %}
@@ -61,7 +61,7 @@
                 <a class="page-link" href="./?page={{last_page}}">{{ last_page }}</a>
               </li>
               <li {% if last_page == cur_page %} class="page-item disabled" {% endif %}>
-                <a class="page-link" href="./?page={{cur_page}}">Next</a>
+                <a class="page-link" href="./?page={{cur_page+1}}">Next</a>
               </li>
             </ul>
           </nav>
