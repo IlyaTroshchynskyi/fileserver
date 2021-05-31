@@ -5,6 +5,10 @@ import coverage
 import http
 import json
 import pytest
+import flask_security
+import flask_login
+from flask_security import UserMixin
+from flask import url_for
 import utils
 import file_service
 from app import app
@@ -132,36 +136,31 @@ def test_index(client):
 
 
 def test_create_file(client):
+
     resp = client.get('/create-file')
-    assert resp.status_code == http.HTTPStatus.OK
+    assert resp.status_code == http.HTTPStatus.FOUND
 
 
 def test_update_file(client):
     file_name = file_service.create_file(*file_param.values())
     resp = client.get(f'/update/{file_name}')
-    assert resp.status_code == http.HTTPStatus.OK
+    assert resp.status_code == http.HTTPStatus.FOUND
 
 
 def test_get_meta_data1(client):
     file_name = file_service.create_file(*file_param.values())
     resp = client.get(f'/get-meta-data/{file_name}')
-    assert resp.status_code == http.HTTPStatus.OK
+    assert resp.status_code == http.HTTPStatus.FOUND
 
 
 def test_parse_rules(client):
-
     resp = client.get('/parse-rules')
-    assert resp.status_code == http.HTTPStatus.OK
+    assert resp.status_code == http.HTTPStatus.FOUND
 
 
 def test_upload_file(client):
     resp = client.get('/upload_file')
-    assert resp.status_code == http.HTTPStatus.OK
-
-
-def test_create_file1(client):
-    resp = client.get('/create-file')
-    assert resp.status_code == http.HTTPStatus.OK
+    assert resp.status_code == http.HTTPStatus.FOUND
 
 
 def test_create_file1(client):
@@ -174,3 +173,24 @@ def test_update_file1(client):
     resp = client.put('/files/3jQ.txt', data=dict(content="TEST CONTENT"))
     print(resp)
     assert b'TEST CONTENT' not in resp.data
+
+
+def test_register(client):
+    resp = client.get('/register')
+    assert resp.status_code == http.HTTPStatus.OK
+
+
+def test_logout(client):
+    resp = client.get('/logout')
+    assert resp.status_code == http.HTTPStatus.FOUND
+
+
+def test_login(client):
+    resp = client.get('/login')
+    assert resp.status_code == http.HTTPStatus.OK
+
+
+def login(client, username, password):
+    return client.post('/login', data={
+        'email': username,
+        'password': password}, follow_redirects=True)
