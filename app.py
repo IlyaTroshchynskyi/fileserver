@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_security import SQLAlchemyUserDatastore, Security, login_required, current_user
-from config import init_logger, Configuration, TEST_FILES_DIR
+from config import init_logger, Configuration, TEST_FILES_DIR, FILES_PER_PAGE
 import file_service
 
 init_logger('app')
@@ -31,22 +31,25 @@ def define_path_to_file(file_name):
     return os.path.join(os.getcwd(), TEST_FILES_DIR, file_name)
 
 
+def get_page(request):
+    try:
+        page = int(request.args.get('page', '1'))
+    except ValueError:
+        page = 1
+    return page
+
+
 @app.route('/')
 def index():
     """Show files on the server in browser
     """
-    files_per_page = 5
-    page = request.args.get('page', '1')
-    if page.isdigit():
-        page = int(page)
-    else:
-        page = 1
+    page = get_page(request)
     logger.info(f'Current page:{page}')
     working_dir = os.path.join(os.getcwd(), TEST_FILES_DIR)
     files = [file for file in os.listdir(working_dir) if os.path.isfile(f'{working_dir}/{file}')]
-    last_page = int(len(files)/5)
+    last_page = int(len(files)/FILES_PER_PAGE)
     return render_template('index.html',
-                           files=files[(page-1) * files_per_page:(page-1) * files_per_page+files_per_page],
+                           files=files[(page-1) * FILES_PER_PAGE:(page-1) * FILES_PER_PAGE+FILES_PER_PAGE],
                            count_files=range(page, page+2 if page <= last_page-2 else last_page),
                            cur_page=page, last_page=last_page)
 
@@ -65,16 +68,10 @@ def delete_file(file_name):
 def read_file(file_name):
     path = define_path_to_file(file_name)
     extension = os.path.splitext(file_name)[-1]
-    if extension == '.txt':
-        content = file_service.read_file(path_to_file=path)
-    elif extension == '.json':
-        content = file_service.read_json_file(path_to_file=path)
-    elif extension == '.xlsx':
-        content = file_service.read_excel_file(path_to_file=path)
-    elif extension == '.csv':
-        content = file_service.read_csv_file(path_to_file=path)
-    else:
-        content = ''
+    controller = {'.txt': file_service.read_file, '.json': file_service.read_json_file,
+                  '.xlsx': file_service.read_excel_file, '.csv': file_service.read_csv_file}
+
+    content = controller.get(extension, '')(path)
     logger.info(f'Content: "{content}" for file: "{file_name}"')
     return render_template('output_file.html', content=content, extension=extension)
 
@@ -87,7 +84,7 @@ def update_file(file_name):
         content = request.form.get('content', '')
 
         file_service.update_file_txt(path, content)
-        logger.info(f'File: "{file_name}" was successfully updated with contetn "{content}"')
+        logger.info(f'File: "{file_name}" was successfully updated with content "{content}"')
         flash(f'File {file_name} was successfully updated', category='success')
         return redirect(url_for('index'))
 
