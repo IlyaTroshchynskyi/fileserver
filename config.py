@@ -2,8 +2,9 @@ import logging
 import logging.handlers
 import os
 
-ONE_MB = 1000000
+ONE_MB = 1_000_000
 TEST_FILES_DIR = 'test_files'
+FILES_PER_PAGE = 5
 
 
 def init_logger(name):
@@ -37,3 +38,4 @@ class Configuration:
     SQLALCHEMY_DATABASE_URI = 'sqlite:///fileserver.db'
     SECURITY_PASSWORD_SALT = 'salt'
     SECURITY_PASSWORD_HASH = 'sha512_crypt'
+
